@@ -1,57 +1,44 @@
 import tkinter as tk
 import importlib
 
-page_list = ["Frame_textlist", "page1"]
-
-def import_pages(page_list):
-    pages = {}
-    for page_name in page_list:
-        module = importlib.import_module(f"pages.{page_name}")
-        page_class = getattr(module, page_name)
-        pages[page_name] = page_class
-    return pages
-
-
-
 class View:
     def __init__(self, root, model):
         self.root = root
         self.model = model
         
         self.window()
+
+        self.page_list = ["Frame_textlist", "grid_buttons","blank"]
+        self.make_frame()
         self.initialize_pages()
-
-        self.setup()
         
+        self.current_page_name = "Frame_textlist"
+        self.page_change(self.current_page_name)
         
-
-
-
     def window(self):
         self.root.minsize(300, 300)  # 最小サイズ
-        self.root.geometry("600x600+200+100")
+        self.root.geometry("600x600+200+0")
 
     def initialize_pages(self):
-        self.pages = import_pages(page_list)
+        self.pageClasses = {}
+        self.pageObjects = {}
+        for page_name in self.page_list:
+            module = importlib.import_module(f"pages.{page_name}")
+            page_class = getattr(module, page_name)
+            self.pageClasses[page_name] = page_class
+            self.pageObjects[page_name] = page_class(self.frame_body, self.model)
 
-    def setup(self):
+    def make_frame(self):
         self.top_frame()
         self.body_frame()
         
-        page_class = self.pages["Frame_textlist"]
-        self.current_page = page_class(self.frame_body, self.model)
-        self.page_change("Frame_textlist")
-
-        
-        
     def page_change(self, page_name):
         print(f"page changing to {page_name}")
-        self.current_page.destroy()
-            
-        page_class = self.pages[page_name]
-        self.current_page = page_class(self.frame_body, self.model)
-        self.current_page.update()
+        self.pageObjects[self.current_page_name].destroyView()
+        self.current_page_name = page_name
+        self.pageObjects[self.current_page_name].createView()
 
+    # Frames
     def top_frame(self):
         frame_top = tk.Frame(self.root, bg="light blue", padx=25, pady=5)
         frame_top.place(relheight=0.1, relwidth=1)
@@ -60,7 +47,7 @@ class View:
             frame_top, text="top flame", font=(20), bg="light blue"
         ).pack(side=tk.LEFT, padx=10)
 
-        for page_name in self.pages:
+        for page_name in self.page_list:
             tk.Button(
                 frame_top,
                 text=page_name,
@@ -69,7 +56,7 @@ class View:
             ).pack(side=tk.LEFT, padx=10)
 
     def body_frame(self):
-        self.frame_body = tk.Frame(self.root,bg="green")
+        self.frame_body = tk.Frame(self.root)
         self.frame_body.place(
             relx=0,
             rely=0.1,
