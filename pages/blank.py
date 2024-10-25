@@ -7,19 +7,3 @@ class blank(page_interface):
         
     def create_content(self):
         super().create_content()
-        tk.Label(
-            self.frame_content,
-            text="frame_content page 1",
-        ).pack()
-
-    def text(self):
-        self.frame_text = tk.Frame(
-            self.frame_body,
-        )
-        self.frame_text.pack(expand=True)
-        
-        for i in range(10):
-            tk.Label(
-                text=f"label {i}",
-                bg="green"
-            ).pack(anchor="w")

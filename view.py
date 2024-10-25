@@ -8,11 +8,11 @@ class View:
         
         self.window()
 
-        self.page_list = ["Frame_textlist", "grid_buttons","blank"]
+        self.page_list = ["canvas","image_grid","loadImage","Frame_textlist", "grid_buttons","blank"]
         self.make_frame()
         self.initialize_pages()
         
-        self.current_page_name = "Frame_textlist"
+        self.current_page_name = self.page_list[0]
         self.page_change(self.current_page_name)
         
     def window(self):
@@ -53,7 +53,7 @@ class View:
                 text=page_name,
                 padx=5,
                 command=lambda name=page_name: self.page_change(name),
-            ).pack(side=tk.LEFT, padx=10)
+            ).pack(side=tk.LEFT, padx=5)
 
     def body_frame(self):
         self.frame_body = tk.Frame(self.root)
