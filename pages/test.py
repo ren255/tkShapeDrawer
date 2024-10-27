@@ -4,8 +4,8 @@ from modules.mouse import mouse
 
 
 class test(page_interface):
-    def __init__(self, parent_frame, model):
-        super().__init__(parent_frame, model)
+    def __init__(self, parent_frame):
+        super().__init__(parent_frame)
 
     def create_content(self):
         super().create_content()

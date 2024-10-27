@@ -3,9 +3,8 @@ import tkinter as tk
 
 
 class page_interface(ABC):
-    def __init__(self, parent_frame, model):
+    def __init__(self, parent_frame):
         self.parent_frame = parent_frame
-        self.model = model  # すべてページで同じ
 
     @abstractmethod
     def create_content(self,pad=0):

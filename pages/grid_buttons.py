@@ -2,8 +2,8 @@ import tkinter as tk
 from interface import page_interface
 
 class grid_buttons(page_interface):
-    def __init__(self,parent_frame,model):
-        super().__init__(parent_frame,model)
+    def __init__(self,parent_frame):
+        super().__init__(parent_frame)
         
     def create_content(self):
         super().create_content()

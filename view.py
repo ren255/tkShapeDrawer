@@ -2,9 +2,8 @@ import tkinter as tk
 import importlib
 
 class View:
-    def __init__(self, root, model):
+    def __init__(self, root):
         self.root = root
-        self.model = model
         
         self.window()
 
@@ -26,7 +25,7 @@ class View:
             module = importlib.import_module(f"pages.{page_name}")
             page_class = getattr(module, page_name)
             self.pageClasses[page_name] = page_class
-            self.pageObjects[page_name] = page_class(self.frame_body, self.model)
+            self.pageObjects[page_name] = page_class(self.frame_body)
         
     def page_change(self, page_name):
         print(f"page changing to {page_name}")
