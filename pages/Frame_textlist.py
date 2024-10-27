@@ -4,7 +4,9 @@ from interface import page_interface
 
 class Frame_textlist(page_interface):
     def __init__(self, parent_frame, model):
-        super().__init__(parent_frame,model,Model_textlist)
+        super().__init__(parent_frame,model)
+        
+        self.page_model = Model_textlist(self)
 
     def create_content(self):
         super().create_content()
@@ -46,13 +48,13 @@ class Frame_textlist(page_interface):
         tk.Button(
             nav_frame,
             text="Previous",
-            command=lambda: self.model.text_page_change(self, self.pagei - 1),
+            command=lambda: self.page_model.change_textnum(self.pagei - 1),
         ).pack(side=tk.LEFT)
 
         tk.Button(
             nav_frame,
             text="Next",
-            command=lambda: self.model.text_page_change(self, self.pagei + 1),
+            command=lambda: self.page_model.change_textnum(self.pagei + 1),
         ).pack(side=tk.RIGHT)
 
     def links_frame(self):
@@ -69,16 +71,16 @@ class Frame_textlist(page_interface):
                 frame_links,
                 text=f"buttons {i+1}",
                 anchor="w",
-                command=lambda i=i + 1: self.model.text_page_change(self, i),
+                command=lambda i=i + 1: self.page_model.change_textnum(i),
             )
 
             button.pack(fill=tk.X, pady=5)
             self.Buttons.append(button)
             
-def Model_textlist():
+class Model_textlist:
     def __init__(self,page):
         self.page = page
     
-    def change_textnum(self):
-        pass
+    def change_textnum(self,i):
+        self.page.text_list_frame(i)
 

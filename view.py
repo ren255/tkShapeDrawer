@@ -8,7 +8,7 @@ class View:
         
         self.window()
 
-        self.page_list = ["canvas","image_grid","loadImage","Frame_textlist", "grid_buttons","blank"]
+        self.page_list = ["canvas","test","image_grid","loadImage","Frame_textlist", "grid_buttons","blank"]
         self.make_frame()
         self.initialize_pages()
         
@@ -27,10 +27,6 @@ class View:
             page_class = getattr(module, page_name)
             self.pageClasses[page_name] = page_class
             self.pageObjects[page_name] = page_class(self.frame_body, self.model)
-
-    def make_frame(self):
-        self.top_frame()
-        self.body_frame()
         
     def page_change(self, page_name):
         print(f"page changing to {page_name}")
@@ -38,6 +34,9 @@ class View:
         self.current_page_name = page_name
         self.pageObjects[self.current_page_name].createView()
 
+    def make_frame(self):
+        self.top_frame()
+        self.body_frame()
     # Frames
     def top_frame(self):
         frame_top = tk.Frame(self.root, bg="light blue", padx=25, pady=5)

@@ -3,24 +3,25 @@ import tkinter as tk
 
 
 class page_interface(ABC):
-    def __init__(self, parent_frame, model, model_page=None):
+    def __init__(self, parent_frame, model):
         self.parent_frame = parent_frame
         self.model = model  # すべてページで同じ
-        self.model_page = model_page  # 各ページごとに異なる
 
     @abstractmethod
-    def create_content(self):
+    def create_content(self,pad=0):
         self.frame_content = tk.Frame(self.parent_frame)
-        self.frame_content.place(
-            relheight=1,
-            relwidth=1,
+        self.frame_content.pack(
+            expand=True,
+            fill=tk.BOTH,
+            padx=pad,
+            pady=pad,
         )
 
-    # Todo
+    # Todo まだ使えない
     def built(self):
         self.destroyView()
         self.createView()
-        return
+        return 
 
     def createView(self):
         # frameを消し、作成する。
@@ -31,3 +32,4 @@ class page_interface(ABC):
         # frameを消す
         if hasattr(self, "frame_content"):
             self.frame_content.destroy()
+
