@@ -89,4 +89,4 @@ class ImageConverter:
             resized_pil = pil_image.resize(size, Image.LANCZOS)
             return ImageConverter.to_Tkinter(resized_pil)
         else:
-            raise ValueError("Unsupported image type")
+            raise ValueError("Unsupported image type")  
