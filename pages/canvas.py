@@ -26,12 +26,12 @@ class canvas(page_interface):
             "selecnum": self.selecnumLabel,
         }
 
-        self.labMgr = toolboxM(self.canvas, self.mouse, labels)
-        self.CnvMgr = canvasM(self.canvas, self.mouse, self.labMgr)
+        self.CnvMgr = canvasM(self.canvas, self.mouse,labels)
 
         # bind
         self.canvas.bind("<ButtonPress-1>", self.CnvMgr.click_bind)
-        self.canvas.bind("<Button1-Motion>", self.CnvMgr.motion_bind)
+        self.canvas.bind("<Motion>", self.CnvMgr.motion_bind)
+        self.canvas.bind("<Button1-Motion>", self.CnvMgr.motion_bindB1)
         self.canvas.bind("<ButtonRelease-1>", self.CnvMgr.release_bind)
 
     def body(self):
@@ -44,10 +44,6 @@ class canvas(page_interface):
         self.canvas.pack(
             fill=tk.BOTH,
             expand=True,
-        )
-        self.canvas.bind(
-            "<Motion>",
-            lambda event: self.labMgr.motion(event),
         )
 
         # toolbox
@@ -114,7 +110,6 @@ class canvas(page_interface):
             height=height - self.pad,
             width=height - self.pad,
             command=lambda mode=text: [
-                self.labMgr.setmode(mode),
                 self.CnvMgr.setmode(mode),
             ],
         )
@@ -129,39 +124,65 @@ class canvas(page_interface):
 
 
 class canvasM:
-    def __init__(self, canvas, mouse, labelM):
+    def __init__(self, canvas, mouse,labels):
         self.mouse = mouse
-        self.labMgr = labelM
         self.canvas = canvas
+        self.labels = labels
+        
         self.mode = "select"
         self.createID = 0
+        self.selected_objects = []
 
     def setmode(self, mode):
         self.mode = mode
         print(self.mode)
 
     ## bind with canvas
+    # continuas
+    def updateLabel(self,event):
+        self.labels["selecnum"].config(
+            text="selecnum:" + str(len(self.selected_objects)),
+        )
+        self.labels["mode"].config(
+            text="mode:" + self.mode,
+        )
+        self.labels["createID"].config(
+            text="createID:" + str(self.createID),
+        )
+        self.labels["Mpos"].config(
+            text=f"pos:{self.mouse.getpos(event)}",
+        )
+
+
     # click_bind -------------------------------------------------------------------------------------
     def click_bind(self, event):
-        self.click_selecBox(event)
-
-    def click_selecBox(self, event):
-        self.canvas.delete("selecBox")
         self.mouse.setpos(event)
+        object, seleRec = self.getVs(event, object=True)
+
+        if not object:
+            self.boxon = True
+            self.selected_objects = []
+        else:
+            self.boxon = []
+            self.selected_objects = [object]
 
     # rerease -------------------------------------------------------------------------------------
     def release_bind(self, event):
         isblank, seleRec = self.getVs(event)
         match self.mode:
             case "select":
-                self.objects = self.canvas.find_overlapping(
+                self.selected_objects = self.canvas.find_overlapping(
                     *self.mouse.getpos(event),
                     *self.mouse.getpos(event),
                 )
+                self.canvas.delete("selecBox")
+
             case "delete":
                 if isblank:
                     self.canvas.delete("all")
                     self.makeID(0)
+                else:
+                    self.canvas.delete(self.selected_objects)
                 self.mode = "select"
 
             case "text":
@@ -178,32 +199,24 @@ class canvasM:
                 self.create_triangle(seleRec)
             case "polyline":
                 self.create_polyline(seleRec)
-        
-        self.labMgr.setmode(self.mode)
 
     # motion_bind  -------------------------------------------------------------------------------------
-    def getVs(self, event):
-        isblank = self.canvas.find_overlapping(
-            *self.mouse.getpos(event),
-            *self.mouse.getpos(event),
-        )
-        if not isblank:
-            isblank = True
-        else:
-            isblank = False
-        seleRec = (
-            *self.mouse.getPpos(),
-            *self.mouse.getpos(event),
-        )
-        return isblank, seleRec
+    def motion_bind(self,event):
+        self.updateLabel(event)
 
-    def motion_bind(self, event):
+    def motion_bindB1(self, event):
+        self.updateLabel(event)
+        
         isblank, seleRec = self.getVs(event)
-        if isblank:
+        if self.boxon:
             self.displayBox(seleRec)
+        else:
+            self.canvas.move(self.selected_objects, *self.mouse.getdiff(event))
+            self.mouse.setpos(event)
 
     def displayBox(self, seleRec):
         if self.canvas.find_withtag("selecBox"):
+
             self.canvas.coords(
                 "selecBox",
                 *seleRec,
@@ -218,10 +231,33 @@ class canvasM:
                 tag="selecBox",
             )
 
+    def getVs(self, event, object=False):
+        # get object_clicked
+        seleRec = (
+            *self.mouse.getPpos(),
+            *self.mouse.getpos(event),
+        )
+        isblank = self.canvas.find_overlapping(
+            *self.mouse.getpos(event),
+            *self.mouse.getpos(event),
+        )
+
+        if object == True:
+            return isblank, seleRec
+
+        if not isblank:
+            isblank = True
+        else:
+            isblank = False
+
+        return isblank, seleRec
+
     # create things
     def create_text(self, rec):
         self.makeID()
-        return self.canvas.create_text(*rec[:2], text="テキスト", tags=str(self.createID))
+        return self.canvas.create_text(
+            *rec[:2], text="テキスト", tags=str(self.createID)
+        )
 
     def create_line(self, rec):
         self.makeID()
@@ -235,14 +271,15 @@ class canvasM:
         self.makeID()
         x, y, x2, y2 = rec
         if x > x2:
-            x,x2 = x2,x
+            x, x2 = x2, x
         if y > y2:
-            y,y2 = y2,y
-            
-        width, height = x2-x, y2-y
+            y, y2 = y2, y
+
+        width, height = x2 - x, y2 - y
         size = min(width, height)
-        print(f"rec is {rec},and making circle with {x, y, x + size, y + size,},size is {size}")
-        return self.canvas.create_oval(x, y, x + size, y + size, tags=str(self.createID))
+        return self.canvas.create_oval(
+            x, y, x + size, y + size, tags=str(self.createID)
+        )
 
     def create_ellipse(self, rec):
         self.makeID()
@@ -253,39 +290,16 @@ class canvasM:
         x1, y1, x2, y2 = rec
         x3 = (x1 + x2) / 2
         y3 = y1
-        return self.canvas.create_polygon(x1, y2, x2, y2, x3, y3, tags=str(self.createID))
+        return self.canvas.create_polygon(
+            x1, y2, x2, y2, x3, y3, tags=str(self.createID)
+        )
 
     def create_polyline(self, rec):
         self.makeID()
         return self.canvas.create_line(*rec, tags=str(self.createID))
-    
-    def makeID(self,id=False):
+
+    def makeID(self, id=False):
         if id is False:
             self.createID += 1
         else:
             self.createID = id
-        self.labMgr.setcreateID(self.createID)
-
-class toolboxM:
-    """
-    tool box + text under canvas
-    """
-
-    def __init__(self, canvas, mouse, labels: dict):
-        self.mouse = mouse
-        self.canvas = canvas
-        self.labels = labels
-
-    def setmode(self, mode):
-        self.labels["mode"].config(text="mode:" + mode)
-    
-    def setcreateID(self,idnum):
-        self.labels["createID"].config(text="createID:" + str(idnum))
-
-    def motion(self, event):
-        """Get mouse position"""
-        # x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
-        self.labels["Mpos"].config(text=f"pos:{self.mouse.getpos(event)}")
-
-    def create_rectangle(*args):
-        pass
