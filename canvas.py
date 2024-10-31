@@ -1,18 +1,20 @@
 import tkinter as tk
 import customtkinter as ctk
 
-from interface import page_interface
 from modules.mouse import mouse
 
 
-class canvas(page_interface):
-    def __init__(self, parent_frame):
-        super().__init__(parent_frame)
+class canvas():
+    def __init__(self, root):
+        self.frame_content = tk.Frame(root)
+        self.frame_content.pack(
+            expand=True,
+            fill=tk.BOTH,
+        )
         self.pad = 10
         self.mouse = mouse()
 
     def create_content(self):
-        super().create_content(5)
         self.body()
         self.labels()
 

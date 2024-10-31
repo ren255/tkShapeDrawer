@@ -162,6 +162,5 @@ cython_debug/
 #.idea/
 
 # my files
-!test.py
+test.py
 /.VSCodeCounter/2024-10-27_22-19-01
-/!test.py
